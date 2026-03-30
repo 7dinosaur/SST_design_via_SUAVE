@@ -45,7 +45,7 @@ def main():
 
     plot_mission(results)
     
-    # plt.show()
+    plt.show()
 
     return
 
@@ -109,7 +109,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = SUAVE.Analyses.Aerodynamics.SU2_Euler_Super()
+    aerodynamics = SUAVE.Analyses.Aerodynamics.Supersonic_Zero()
     aerodynamics.geometry = vehicle    
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     aerodynamics.settings.span_efficiency            = .8
