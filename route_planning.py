@@ -32,7 +32,7 @@ class RoutePlanner:
         for point in points:
             if point[1] < 0:
                     point[1] += 360  # 转换为0~360度经度
-        map = folium.Map(location=[30, 160], zoom_start=3)
+        map = folium.Map(location=[30, 160], tiles="OpenStreetMap", zoom_start=3)
         folium.PolyLine(points, color="blue", weight=3).add_to(map)
 
         folium.Marker([points[0][1], points[0][0]], tooltip="Start").add_to(map)

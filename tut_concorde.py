@@ -595,9 +595,9 @@ def mission_setup(analyses):
     segment.state.unknowns.body_angle = ones_row(1) * 7. * Units.deg   
     
     segment.altitude_start = 0.0   * Units.km
-    segment.altitude_end   = 3.05   * Units.km
+    segment.altitude_end   = 3.0   * Units.km
     segment.air_speed      = 128.6 * Units['m/s']
-    segment.climb_rate     = 20.32 * Units['m/s']
+    segment.climb_rate     = 12.7 * Units['m/s']
     
     # add to misison
     mission.append_segment(segment)
@@ -612,9 +612,9 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.altitude_end   = 4.57   * Units.km
-    segment.air_speed      = 205.8  * Units['m/s']
-    segment.climb_rate     = 10.16  * Units['m/s']
+    segment.altitude_end   = 11.0   * Units.km
+    segment.air_speed      = 174.91  * Units['m/s']
+    segment.climb_rate     = 6.1  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -629,10 +629,10 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.altitude_end = 7.60   * Units.km
-    segment.mach_start   = 0.64
-    segment.mach_end     = 1.0
-    segment.climb_rate   = 5.05  * Units['m/s']
+    segment.altitude_end = 13.0   * Units.km
+    segment.mach_start   = 0.78
+    segment.mach_end     = 1.3
+    segment.climb_rate   = 3.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -646,10 +646,10 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.altitude_end = 15.24   * Units.km
-    segment.mach_start   = 1.0
-    segment.mach_end     = 2.02
-    segment.climb_rate   = 5.08  * Units['m/s']
+    segment.altitude_end = 18.0   * Units.km
+    segment.mach_start   = 1.3
+    segment.mach_end     = 1.8
+    segment.climb_rate   = 1.5  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -659,17 +659,17 @@ def mission_setup(analyses):
     #   Fourth Climb Segment
     # ------------------------------------------------------------------    
 
-    segment = Segments.Climb.Constant_Mach_Constant_Rate(base_segment)
-    segment.tag = "climb_5"
+    # segment = Segments.Climb.Constant_Mach_Constant_Rate(base_segment)
+    # segment.tag = "climb_5"
     
-    segment.analyses.extend( analyses.base )
+    # segment.analyses.extend( analyses.base )
     
-    segment.altitude_end = 18.288   * Units.km
-    segment.mach_number  = 2.02
-    segment.climb_rate   = 0.65  * Units['m/s']
+    # segment.altitude_end = 18.288   * Units.km
+    # segment.mach_number  = 2.02
+    # segment.climb_rate   = 0.65  * Units['m/s']
     
-    # add to mission
-    mission.append_segment(segment)
+    # # add to mission
+    # mission.append_segment(segment)
     
     # ------------------------------------------------------------------    
     #   Cruise Segment
@@ -680,8 +680,8 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.mach       = 2.02
-    segment.distance   = 2000.0 * Units.km
+    segment.mach       = 1.8
+    segment.distance   = 7786.0 * Units.km
         
     mission.append_segment(segment)
     
@@ -694,10 +694,10 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.altitude_end = 6.8   * Units.km
-    segment.mach_start   = 2.02
-    segment.mach_end     = 1.0
-    segment.descent_rate = 5.0   * Units['m/s']
+    segment.altitude_end = 11.0   * Units.km
+    segment.mach_start   = 1.8
+    segment.mach_end     = 0.95
+    segment.descent_rate = 3.5   * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -706,15 +706,14 @@ def mission_setup(analyses):
     #   Second Descent Segment
     # ------------------------------------------------------------------    
     
-    segment = Segments.Descent.Linear_Mach_Constant_Rate(base_segment)
+    segment = Segments.Descent.Constant_Speed_Constant_Rate(base_segment)
     segment.tag = "descent_2"
     
     segment.analyses.extend( analyses.base )
     
     segment.altitude_end = 3.0   * Units.km
-    segment.mach_start   = 1.0
-    segment.mach_end     = 0.65
-    segment.descent_rate = 5.0   * Units['m/s']
+    segment.air_speed    = 144.0 * Units['m/s']
+    segment.descent_rate = 4.5   * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)    
@@ -730,7 +729,7 @@ def mission_setup(analyses):
     
     segment.altitude_end = 0.0   * Units.km
     segment.air_speed    = 130.0 * Units['m/s']
-    segment.descent_rate = 5.0   * Units['m/s']
+    segment.descent_rate = 2.5   * Units['m/s']
 
     # append to mission
     mission.append_segment(segment)
