@@ -1,3 +1,5 @@
+from hmac import new
+
 import folium
 from global_land_mask import globe
 import json
@@ -5,13 +7,19 @@ import numpy as np
 from numpy import ndarray
 import math
 import matplotlib.pyplot as plt
+from scipy import interpolate
 
 R_earth = 6371000 # 地球半径（米）
 
 class RoutePlanner:
-    def __init__(self, geojson):
-        self.geojson = geojson
-        self.points = self.geojson_to_points()
+    def __init__(self, geojson=None, points=None):
+        if geojson is not None:
+            self.geojson = geojson
+            self.points = self.geojson_to_points()
+        elif points is not None:
+            self.points = points
+        else:
+            raise ValueError("必须提供geojson文件路径或点坐标数组")
 
     def geojson_to_points(self) -> ndarray:
         # 1. 读取并解析GeoJSON文件
@@ -35,8 +43,8 @@ class RoutePlanner:
         map = folium.Map(location=[30, 160], tiles="OpenStreetMap", zoom_start=3)
         folium.PolyLine(points, color="blue", weight=3).add_to(map)
 
-        folium.Marker([points[0][1], points[0][0]], tooltip="Start").add_to(map)
-        folium.Marker([points[-1][1], points[-1][0]], tooltip="End").add_to(map)
+        folium.Marker([points[0][0], points[0][1]], tooltip="Start").add_to(map)
+        folium.Marker([points[-1][0], points[-1][1]], tooltip="End").add_to(map)
 
         map.save(output_html)
 
@@ -79,12 +87,54 @@ class RoutePlanner:
             flight_mission[i, 0] = range_accum
             flight_mission[i, 1] = globe.is_land(lat, lon)
 
-        plt.plot(flight_mission[:, 0], flight_mission[:, 1])
-        plt.xlabel("Range (m)")
+        plt.figure(figsize=(15, 4))
+        plt.plot(flight_mission[:, 0]/1000, flight_mission[:, 1])
+        plt.xlabel("Range (km)")
+        plt.ticklabel_format(style='plain', axis='x')
+
+    def rearrange_points(self, target_num=100):
+        points = self.points[:, [1, 0]]
+        for point in points:
+            if point[1] < 0:
+                    point[1] += 360  # 转换为0~360度经度
+        # 如果点太少，直接返回（避免插值出错）
+        if len(points) <= 2:
+            return points
+        
+        # 拆分 x 和 y
+        x = points[:, 0]
+        y = points[:, 1]
+
+        # 生成路径长度（用于均匀插值）
+        t = np.zeros_like(x)
+        t[1:] = np.sqrt((x[1:] - x[:-1])**2 + (y[1:] - y[:-1])**2)
+        t = np.cumsum(t)
+        t /= t[-1]  # 归一化到 0~1
+
+        # 生成新的均匀插值点
+        t_new = np.linspace(0, 1, target_num)
+        x_new = interpolate.interp1d(t, x, kind='linear')(t_new)
+        y_new = interpolate.interp1d(t, y, kind='linear')(t_new)
+
+        # 合并成最终点集
+        rearranged = np.column_stack([x_new, y_new])
+        # 大于180度的经度转换回负值
+        for point in rearranged:
+            if point[1] > 180:
+                point[1] -= 360
+        return rearranged[:, [1, 0]]  # 转回 [lon, lat]
 
 if __name__ == "__main__":
     route = RoutePlanner("beijing-to-las.geojson")
-    route.draw_map("route_map.html")
+    # route.draw_map("route_map.html")
     print("总距离（米）：", route.route_total_distance())
+    new_points = route.rearrange_points(target_num=11)
+    new_route = RoutePlanner(points=new_points)
+    new_route.draw_map("rearranged_route_map.html")
+    old_points = route.points
+    plt.figure(figsize=(8, 6))
+    plt.plot(old_points[:, 0], old_points[:, 1], label='Original Points')
+    plt.plot(new_points[:, 0], new_points[:, 1], label='Rearranged Points')
+    print("总距离:(米)", new_route.route_total_distance())
     route.flight_mission_set()
     plt.show()

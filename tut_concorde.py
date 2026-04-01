@@ -29,9 +29,12 @@ from copy import deepcopy
 def main():
 
     configs, analyses = full_setup()
+    max_mass = configs.base.mass_properties.max_takeoff
+    print("最大起飞质量：", max_mass)
 
     simple_sizing(configs)
 
+    print("初始化...")
     configs.finalize()
     analyses.finalize()
 
@@ -39,9 +42,15 @@ def main():
     weights = analyses.configs.base.weights
     breakdown = weights.evaluate()      
 
+    print("分析...")
     # mission analysis
     mission = analyses.missions.base
     results = mission.evaluate()
+
+    
+    last_segment = results.segments.values()[-1]
+    final_mass     = last_segment.conditions.weights.total_mass[0]
+    print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
 
     plot_mission(results)
     
@@ -597,7 +606,7 @@ def mission_setup(analyses):
     segment.altitude_start = 0.0   * Units.km
     segment.altitude_end   = 3.0   * Units.km
     segment.air_speed      = 128.6 * Units['m/s']
-    segment.climb_rate     = 12.7 * Units['m/s']
+    segment.climb_rate     = 15.0 * Units['m/s']
     
     # add to misison
     mission.append_segment(segment)
@@ -614,7 +623,7 @@ def mission_setup(analyses):
     
     segment.altitude_end   = 11.0   * Units.km
     segment.air_speed      = 174.91  * Units['m/s']
-    segment.climb_rate     = 6.1  * Units['m/s']
+    segment.climb_rate     = 10.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -632,7 +641,7 @@ def mission_setup(analyses):
     segment.altitude_end = 13.0   * Units.km
     segment.mach_start   = 0.78
     segment.mach_end     = 1.3
-    segment.climb_rate   = 3.0  * Units['m/s']
+    segment.climb_rate   = 4.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -649,7 +658,7 @@ def mission_setup(analyses):
     segment.altitude_end = 18.0   * Units.km
     segment.mach_start   = 1.3
     segment.mach_end     = 1.8
-    segment.climb_rate   = 1.5  * Units['m/s']
+    segment.climb_rate   = 4.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
