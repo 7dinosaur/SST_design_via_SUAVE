@@ -1,3 +1,30 @@
-range altitude 
-0 0
-0 3
+{"range": 11000,
+
+"climb_1": {
+    "alt_start": 0,
+    "alt_end": 11000,
+    "mach_start": 0,
+    "mach_end": 0.9,
+    "speed_start": 0,
+    "speed_end": 0,
+    "climb_rate": 2000
+            },
+"climb_2": {
+    "alt_start": 11000,
+    "alt_end": 17000,
+    "mach_start": 0.9,
+    "mach_end": 1.5,
+    "speed_start": 0,
+    "speed_end": 0,
+    "climb_rate": 2000
+            },
+"climb_3": {
+    "alt_start": 17000,
+    "alt_end": 20000,
+    "mach_start": 1.5,
+    "mach_end": 2.0,
+    "speed_start": 0,
+    "speed_end": 0,
+    "climb_rate": 2000
+            },
+}
