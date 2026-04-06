@@ -147,25 +147,16 @@ class RoutePlanner:
         is_water = (flight_mission[1:, 1] == 0)         # 每一段是否水面
         water_range = np.sum(seg_dists[is_water])       # 水面总距离
 
-        land_section_count = 0
-        in_land = False  # 标记当前是否处于陆地段
-
-        for i in range(1, n):
-            current_land = flight_mission[i, 1] == 1
-
-            # 水面 → 陆地：新陆地段开始
-            if not in_land and current_land:
-                land_section_count += 1
-                in_land = True
-
-            # 陆地 → 水面：陆地段结束
-            elif in_land and not current_land:
-                in_land = False
-
-        check_after_range = 1000 * 1000 #500km后不允许有陆地
-        check_last_range = total_range - check_after_range #最后500km允许有陆地
+        check_after_range = 1000 * 1000 #1000km后不允许有陆地
+        check_last_range = total_range - check_after_range #最后1000km允许有陆地
         after_points = flight_mission[(flight_mission[:, 0] >= check_after_range) & (flight_mission[:, 0] <= check_last_range)]
-        no_land_after = np.all(after_points[:, 1] == 0)
+        
+        land_flags = after_points[:, 1]
+        no_land_after = True
+        for t in range(2, len(land_flags)):
+            if after_points[t, 1] * after_points[t-1, 1] * after_points[t-2, 1] == 1:
+                no_land_after = False
+                break
 
         if fig:
             plt.figure(figsize=(18, 4))
@@ -173,7 +164,7 @@ class RoutePlanner:
             plt.xlabel("Range (km)")
             plt.ticklabel_format(style='plain', axis='x')
 
-        return water_range / total_range if total_range != 0 else 0.0, land_section_count, no_land_after
+        return water_range / total_range if total_range != 0 else 0.0, no_land_after
 
     def rearrange_points(self, target_num=100):
         points = self.points[:, [1, 0]]
@@ -214,10 +205,11 @@ class RoutePlanner:
         return rearranged[:, [1, 0]]  # 转回 [lon, lat]
     
 def obj(var, base_route):
-    points = base_route.rearrange_points(target_num=15)
+    n_change = len(var)
+    points = base_route.rearrange_points(target_num=n_change+2)
     points[1:-1, 1] += var  # 调整纬度
     new_route = RoutePlanner(points=points)
-    water_percent, _, no_land = new_route.flight_mission_set()
+    water_percent, no_land = new_route.flight_mission_set()
     range_total = new_route.route_total_distance() / 10000000
     print("当前水面占比", water_percent, "当前航程", f"{range_total*10000:.1f}km")
     if not no_land:  # 如果陆地段超过3段，强烈惩罚
@@ -248,24 +240,25 @@ def multi_draw(route_list: list[RoutePlanner], output_html: str):
 
 if __name__ == "__main__":
     route = RoutePlanner("beijing-to-las.geojson")
-    x0 = np.random.uniform(-20, 20, size=13)  # 初始猜测
-    bounds = [(-20, 20)] * 13  # 每个变量的边界
-#     result = differential_evolution(
-#     obj, 
-#     bounds,
-#     args=(route,),
-#     maxiter=100,
-#     tol=1e-6,
-#     workers=1,
-#     disp=True
-# )
-    # print("优化结果：", result)
-    # print("优化后的水面航程占比：", obj(result.x, route))
+    n_change = 8
+    x0 = np.random.uniform(-20, 20, size=n_change)  # 初始猜测
+    bounds = [(-20, 20)] * n_change  # 每个变量的边界
+    result = differential_evolution(
+    obj, 
+    bounds,
+    args=(route,),
+    maxiter=100,
+    tol=1e-6,
+    workers=1,
+    disp=True
+)
+    print("优化结果：", result)
+    print("优化后的水面航程占比：", obj(result.x, route))
 
-    x = np.array([-8.214e+00, -8.485e+00, -7.185e+00, -7.269e+00, -7.561e+00, -6.509e+00, -5.505e+00, -6.275e+00])
-    points = route.rearrange_points(target_num=10)
+    # x = np.array([-8.214e+00, -8.485e+00, -7.185e+00, -7.269e+00, -7.561e+00, -6.509e+00, -5.505e+00, -6.275e+00])
+    points = route.rearrange_points(target_num=n_change)
     # print(result.x)
-    points[1:-1, 1] += x  # 调整纬度
+    points[1:-1, 1] += result.x  # 调整纬度
     new_route = RoutePlanner(points=points)
     new_route.flight_mission_set(fig=True)
     new_route.draw_map("optimized_route.html")
