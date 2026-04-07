@@ -18,8 +18,6 @@ from SUAVE.Plots.Performance.Mission_Plots import *
 from SUAVE.Methods.Propulsion.turbojet_sizing import turbojet_sizing
 from SUAVE.Input_Output.OpenVSP import write
 
-import pylab as plt
-
 from copy import deepcopy
 
 # ----------------------------------------------------------------------
@@ -29,6 +27,7 @@ from copy import deepcopy
 def main():
 
     configs, analyses = full_setup()
+    print(analyses.missions.base.segments.cruise.distance / Units.km)
     max_mass = configs.base.mass_properties.max_takeoff
     print("最大起飞质量：", max_mass)
 
@@ -46,15 +45,38 @@ def main():
     # mission analysis
     mission = analyses.missions.base
     results = mission.evaluate()
-
     
     last_segment = results.segments.values()[-1]
-    final_mass     = last_segment.conditions.weights.total_mass[0]
+    final_mass     = last_segment.conditions.weights.total_mass[-1, 0]
+    range_list = []
+    for segment in results.segments.values():
+        range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
     print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
+    print("分段航程：", range_list)
+    other_range = (range_list[3] + range_list[-1] - range_list[-4]) / 1000
+    print("爬升下降所用航程：", other_range)
+    true_cruise_range = (11000 - other_range) * Units.km
+    analyses.missions.base.segments.cruise.distance = true_cruise_range
 
-    plot_mission(results)
+    print("修正航程后重新分析...")
+    # mission analysis
+    mission = analyses.missions.base
+    print("确认新巡航段: ", mission.segments.cruise.distance)
+    results = mission.evaluate()
     
-    plt.show()
+    last_segment = results.segments.values()[-1]
+    final_mass     = last_segment.conditions.weights.total_mass[-1, 0]
+    range_list = []
+    for segment in results.segments.values():
+        range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
+    print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
+    print("分段航程：", range_list)
+    other_range = (range_list[3] + range_list[-1] - range_list[-4]) / 1000
+    print("爬升下降所用航程：", other_range)
+
+    # plot_mission(results)
+    
+    # plt.show()
 
     return
 
@@ -73,8 +95,7 @@ def full_setup():
     configs_analyses = analyses_setup(configs)
 
     # mission analyses
-    mission  = mission_setup(configs_analyses)
-    missions_analyses = missions_setup(mission)
+    missions_analyses  = mission_setup(configs_analyses)
 
     analyses = SUAVE.Analyses.Analysis.Container()
     analyses.configs  = configs_analyses
@@ -689,8 +710,8 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.mach       = 1.8
-    segment.distance   = 7786.0 * Units.km
+    segment.mach       = 1.6
+    segment.distance   = 7844.0 * Units.km
         
     mission.append_segment(segment)
     
@@ -746,22 +767,10 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------    
     #   Mission definition complete    
     # ------------------------------------------------------------------
-    
-    return mission
-
-def missions_setup(base_mission):
-
-    # the mission container
     missions = SUAVE.Analyses.Mission.Mission.Container()
+    missions.base = mission
 
-    # ------------------------------------------------------------------
-    #   Base Mission
-    # ------------------------------------------------------------------
-
-    missions.base = base_mission
-
-    # done!
-    return missions  
+    return missions
 
 if __name__ == '__main__': 
     

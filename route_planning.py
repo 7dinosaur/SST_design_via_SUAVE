@@ -147,7 +147,7 @@ class RoutePlanner:
         is_water = (flight_mission[1:, 1] == 0)         # 每一段是否水面
         water_range = np.sum(seg_dists[is_water])       # 水面总距离
 
-        check_after_range = 1000 * 1000 #1000km后不允许有陆地
+        check_after_range = 2000 * 1000 #1000km后不允许有陆地
         check_last_range = total_range - check_after_range #最后1000km允许有陆地
         after_points = flight_mission[(flight_mission[:, 0] >= check_after_range) & (flight_mission[:, 0] <= check_last_range)]
         
@@ -214,7 +214,7 @@ def obj(var, base_route):
     print("当前水面占比", water_percent, "当前航程", f"{range_total*10000:.1f}km")
     if not no_land:  # 如果陆地段超过3段，强烈惩罚
         range_total += 2  # 大幅降低水面占比，迫使优化远离过多陆地段
-    return 3*range_total - water_percent   # 返回水面航程占比
+    return 0.9*range_total - 0.1*water_percent   # 返回水面航程占比
 
 def multi_draw(route_list: list[RoutePlanner], output_html: str):
         map = folium.Map(location=[30, 160], tiles="OpenStreetMap", zoom_start=3)
@@ -256,8 +256,9 @@ if __name__ == "__main__":
     print("优化后的水面航程占比：", obj(result.x, route))
 
     # x = np.array([-8.214e+00, -8.485e+00, -7.185e+00, -7.269e+00, -7.561e+00, -6.509e+00, -5.505e+00, -6.275e+00])
-    points = route.rearrange_points(target_num=n_change)
-    # print(result.x)
+    points = route.rearrange_points(target_num=n_change+2)
+    print(result.x)
+    np.savetxt("opt.dat", result.x, '%.5f')
     points[1:-1, 1] += result.x  # 调整纬度
     new_route = RoutePlanner(points=points)
     new_route.flight_mission_set(fig=True)
