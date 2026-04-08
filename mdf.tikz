@@ -18,69 +18,129 @@
 
 \matrix[MatrixSetup]{
 %Row 0
-\node [DataIO] (left_output_opt) {$x^*, z^*$};&
-\node [Optimization] (opt) {$\text{System Optimizer}$};&
+&
+\node [DataIO] (output_design_system) {$p_0, p_1, MTOW^{(0)}$};&
 &
 &
-\node [DataInter] (opt-D1) {$x, z$};&
-\node [DataInter] (opt-D2) {$z$};&
-\node [DataInter] (opt-F) {$x, z$};&
+&
+&
+\node [DataIO] (output_SUAVE) {$x_0,x_1\dots x_N$};&
+&
+&
+&
 \\
 %Row 1
 &
+\node [Optimization] (design_system) {$\text{Overall Design}$};&
+\node [DataInter] (design_system-route_opt) {$p_0,p_1$};&
 &
-\node [Optimization] (route_opt) {$\text{Route Optimizer}$};&
+&
+\node [DataInter] (design_system-aircraft_opt) {$MTOW$};&
 &
 &
 &
 &
 \\
 %Row 2
+\node [DataIO] (left_output_route_opt) {$\Gamma*$};&
+&
+\node [Optimization] (route_opt) {$\text{Route Optimizer}$};&
+\node [DataInter] (route_opt-Range) {$\Gamma$};&
+\node [DataInter] (route_opt-land) {$\Gamma$};&
+\node [DataInter] (route_opt-aircraft_opt) {$\Gamma*$};&
 &
 &
 &
-\node [MDA] (solver) {$\text{Newton}$};&
-\node [DataInter] (solver-D1) {$y_2$};&
-\node [DataInter] (solver-D2) {$y_1$};&
-\node [DataInter] (solver-F) {$y_1, y_2$};&
-\node [DataInter] (solver-G) {$y_1, y_2$};\\
+&
+\\
 %Row 3
-\node [DataIO] (left_output_D1) {$y_1^*$};&
 &
 &
-\node [DataInter] (D1-solver) {$\mathcal{R}(y_1)$};&
-\node [Function] (D1) {$D_1$};&
+\node [DataInter] (Range-route_opt) {$f$};&
+\node [Function] (Range) {$Range$};&
+&
+&
+&
+&
 &
 &
 \\
 %Row 4
-\node [DataIO] (left_output_D2) {$y_2^*$};&
 &
 &
-\node [DataInter] (D2-solver) {$\mathcal{R}(y_2)$};&
+\node [DataInter] (land-route_opt) {$c$};&
 &
-\node [Function] (D2) {$D_2$};&
+\node [Function] (land) {$land \_ mask$};&
+&
+&
+&
+&
 &
 \\
 %Row 5
-\node [DataIO] (left_output_F) {$f^*$};&
-\node [DataInter] (F-opt) {$f$};&
+\node [DataIO] (left_output_aircraft_opt) {$MTOW*$};&
 &
 &
 &
 &
-\node [Function] (F) {$F$};&
+\node [Optimization] (aircraft_opt) {$\text{Aircraft Optimizer}$};&
+\node [DataInter] (aircraft_opt-SUAVE) {$MTOW, \Gamma*$};&
+&
+&
+&
 \\
 %Row 6
-\node [DataIO] (left_output_G) {$g^*$};&
-\node [DataInter] (G-opt) {$g$};&
 &
 &
 &
 &
 &
-\node [Function] (G) {$G$};\\
+&
+\node [MDA] (SUAVE) {$\text{SUAVE}$};&
+\node [DataInter] (SUAVE-aerodynamic) {$x_i$};&
+\node [DataInter] (SUAVE-mission) {$MTOW, \Gamma*$};&
+&
+\\
 %Row 7
+&
+&
+&
+&
+&
+&
+&
+\node [Function] (aerodynamic) {$aerodynamic$};&
+\node [DataInter] (aerodynamic-mission) {$C_L, C_D$};&
+&
+\\
+%Row 8
+&
+&
+&
+&
+&
+\node [DataInter] (mission-aircraft_opt) {$W_{fuel}$};&
+&
+&
+\node [Function] (mission) {$mission$};&
+\node [DataInter] (mission-weight) {$D(t)$};&
+\\
+%Row 9
+&
+&
+&
+&
+&
+&
+&
+&
+\node [DataInter] (weight-mission) {$W(t)$};&
+\node [Function] (weight) {$weight$};&
+\\
+%Row 10
+&
+&
+&
 &
 &
 &
@@ -97,34 +157,39 @@
 \begin{pgfonlayer}{data}
 \path
 % Horizontal edges
-(opt) edge [DataLine] (opt-D1)
-(opt) edge [DataLine] (opt-D2)
-(opt) edge [DataLine] (opt-F)
-(solver) edge [DataLine] (solver-D1)
-(solver) edge [DataLine] (solver-D2)
-(D1) edge [DataLine] (D1-solver)
-(solver) edge [DataLine] (solver-F)
-(D2) edge [DataLine] (D2-solver)
-(solver) edge [DataLine] (solver-G)
-(F) edge [DataLine] (F-opt)
-(G) edge [DataLine] (G-opt)
-(opt) edge [DataLine] (left_output_opt)
-(D1) edge [DataLine] (left_output_D1)
-(D2) edge [DataLine] (left_output_D2)
-(F) edge [DataLine] (left_output_F)
-(G) edge [DataLine] (left_output_G)
+(design_system) edge [DataLine] (design_system-route_opt)
+(design_system) edge [DataLine] (design_system-aircraft_opt)
+(route_opt) edge [DataLine] (route_opt-Range)
+(route_opt) edge [DataLine] (route_opt-land)
+(Range) edge [DataLine] (Range-route_opt)
+(land) edge [DataLine] (land-route_opt)
+(route_opt) edge [DataLine] (route_opt-aircraft_opt)
+(aircraft_opt) edge [DataLine] (aircraft_opt-SUAVE)
+(SUAVE) edge [DataLine] (SUAVE-aerodynamic)
+(SUAVE) edge [DataLine] (SUAVE-mission)
+(aerodynamic) edge [DataLine] (aerodynamic-mission)
+(mission) edge [DataLine] (mission-weight)
+(weight) edge [DataLine] (weight-mission)
+(mission) edge [DataLine] (mission-aircraft_opt)
+(route_opt) edge [DataLine] (left_output_route_opt)
+(aircraft_opt) edge [DataLine] (left_output_aircraft_opt)
 % Vertical edges
-(opt-D1) edge [DataLine] (D1)
-(opt-D2) edge [DataLine] (D2)
-(opt-F) edge [DataLine] (F)
-(solver-D1) edge [DataLine] (D1)
-(solver-D2) edge [DataLine] (D2)
-(D1-solver) edge [DataLine] (solver)
-(solver-F) edge [DataLine] (F)
-(D2-solver) edge [DataLine] (solver)
-(solver-G) edge [DataLine] (G)
-(F-opt) edge [DataLine] (opt)
-(G-opt) edge [DataLine] (opt);
+(design_system-route_opt) edge [DataLine] (route_opt)
+(design_system-aircraft_opt) edge [DataLine] (aircraft_opt)
+(route_opt-Range) edge [DataLine] (Range)
+(route_opt-land) edge [DataLine] (land)
+(Range-route_opt) edge [DataLine] (route_opt)
+(land-route_opt) edge [DataLine] (route_opt)
+(route_opt-aircraft_opt) edge [DataLine] (aircraft_opt)
+(aircraft_opt-SUAVE) edge [DataLine] (SUAVE)
+(SUAVE-aerodynamic) edge [DataLine] (aerodynamic)
+(SUAVE-mission) edge [DataLine] (mission)
+(aerodynamic-mission) edge [DataLine] (mission)
+(mission-weight) edge [DataLine] (weight)
+(weight-mission) edge [DataLine] (mission)
+(mission-aircraft_opt) edge [DataLine] (aircraft_opt)
+(design_system) edge [DataLine] (output_design_system)
+(SUAVE) edge [DataLine] (output_SUAVE);
 \end{pgfonlayer}
 
 \end{tikzpicture}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.6)  8 APR 2026 10:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.6)  8 APR 2026 16:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -527,14 +527,18 @@ Preview: PDFoutput 1
 \pgf@layerbox@process=\box70
 \pgf@layerboxsaved@process=\box71
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 21.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 22.
  (e:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 21.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 22.
  (e:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+Overfull \hbox (276.27293pt too wide) in paragraph at lines 195--195
+[][] 
+ []
+
 Preview: Tightpage -327680 -327680 327680 327680
 [1{e:/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]) (./mdf.aux)
  ***********
@@ -543,15 +547,15 @@ L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 16145 strings out of 467891
- 332149 string characters out of 5438302
- 727288 words of memory out of 5000000
- 44394 multiletter control sequences out of 15000+600000
+ 16229 strings out of 467891
+ 335658 string characters out of 5438302
+ 740491 words of memory out of 5000000
+ 44478 multiletter control sequences out of 15000+600000
  630487 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,16n,107p,465b,1016s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on mdf.pdf (1 page, 49269 bytes).
+ 102i,17n,107p,465b,1016s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on mdf.pdf (1 page, 54604 bytes).
 PDF statistics:
  60 PDF objects out of 1000 (max. 8388607)
  30 compressed objects within 1 object stream

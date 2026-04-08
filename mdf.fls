@@ -241,5 +241,5 @@ INPUT mdf.aux
 INPUT e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb
 INPUT e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb
 INPUT e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb
+INPUT e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb
 INPUT e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
-INPUT e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb
