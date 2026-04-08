@@ -241,25 +241,26 @@ def multi_draw(route_list: list[RoutePlanner], output_html: str):
 if __name__ == "__main__":
     route = RoutePlanner("beijing-to-las.geojson")
     n_change = 8
-    x0 = np.random.uniform(-20, 20, size=n_change)  # 初始猜测
-    bounds = [(-20, 20)] * n_change  # 每个变量的边界
-    result = differential_evolution(
-    obj, 
-    bounds,
-    args=(route,),
-    maxiter=100,
-    tol=1e-6,
-    workers=1,
-    disp=True
-)
-    print("优化结果：", result)
-    print("优化后的水面航程占比：", obj(result.x, route))
+#     x0 = np.random.uniform(-20, 20, size=n_change)  # 初始猜测
+#     bounds = [(-20, 20)] * n_change  # 每个变量的边界
+#     result = differential_evolution(
+#     obj, 
+#     bounds,
+#     args=(route,),
+#     maxiter=100,
+#     tol=1e-6,
+#     workers=1,
+#     disp=True
+# )
+#     print("优化结果：", result)
+#     print("优化后的水面航程占比：", obj(result.x, route))
 
-    # x = np.array([-8.214e+00, -8.485e+00, -7.185e+00, -7.269e+00, -7.561e+00, -6.509e+00, -5.505e+00, -6.275e+00])
+#     # x = np.array([-8.214e+00, -8.485e+00, -7.185e+00, -7.269e+00, -7.561e+00, -6.509e+00, -5.505e+00, -6.275e+00])
     points = route.rearrange_points(target_num=n_change+2)
-    print(result.x)
-    np.savetxt("opt.dat", result.x, '%.5f')
-    points[1:-1, 1] += result.x  # 调整纬度
+#     print(result.x)
+    opt_x = np.loadtxt("opt.dat")
+    np.savetxt("opt.dat", opt_x, '%.5f')
+    points[1:-1, 1] += opt_x  # 调整纬度
     new_route = RoutePlanner(points=points)
     new_route.flight_mission_set(fig=True)
     new_route.draw_map("optimized_route.html")
