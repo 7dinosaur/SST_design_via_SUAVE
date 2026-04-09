@@ -13,12 +13,16 @@
 
 import SUAVE
 assert SUAVE.__version__=='2.5.2', 'These tutorials only work with the SUAVE 2.5.2 release'
-from SUAVE.Core import Units
+from SUAVE.Core import Units, Data
 from SUAVE.Plots.Performance.Mission_Plots import *
 from SUAVE.Methods.Propulsion.turbojet_sizing import turbojet_sizing
+from SUAVE.Methods.Geometry.Two_Dimensional.Planform import segment_properties
 from SUAVE.Input_Output.OpenVSP import write
 
 from copy import deepcopy
+
+import pandas as pd
+from wing_tool import wing_from_para
 
 # ----------------------------------------------------------------------
 #   Main
@@ -53,15 +57,22 @@ def main():
         range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
     print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
     print("分段航程：", range_list)
-    other_range = (range_list[3] + range_list[-1] - range_list[-4]) / 1000
+    other_range = (range_list[2] + range_list[4] - range_list[3] + range_list[-1] - range_list[-4]) / 1000
+    range_13 = range_list[2] / 1000
     print("爬升下降所用航程：", other_range)
-    true_cruise_range = (11000 - other_range) * Units.km
-    analyses.missions.base.segments.cruise.distance = true_cruise_range
+    target_range = 10388.825148624662
+    land_range = 1315
+    wait_cruise_range = (land_range - range_13)
+    print("马赫截止巡航航程: ", wait_cruise_range / Units.km)
+    true_cruise_range = (target_range - other_range - wait_cruise_range)
+    analyses.missions.base.segments.cruise_0.distance = wait_cruise_range * Units.km
+    analyses.missions.base.segments.cruise.distance = true_cruise_range * Units.km
 
     print("修正航程后重新分析...")
     # mission analysis
     mission = analyses.missions.base
-    print("确认新巡航段: ", mission.segments.cruise.distance * Units.km)
+    print("确认新巡航段: ", mission.segments.cruise.distance)
+    print("确认马赫截止巡航段: ", mission.segments.cruise_0.distance)
     results = mission.evaluate()
     
     last_segment = results.segments.values()[-1]
@@ -71,12 +82,12 @@ def main():
         range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
     print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
     print("分段航程：", range_list)
-    other_range = (range_list[3] + range_list[-1] - range_list[-4]) / 1000
+    other_range = (range_list[4] + range_list[-1] - range_list[-4]) / 1000
     print("爬升下降所用航程：", other_range)
 
-    # plot_mission(results)
+    plot_mission(results)
     
-    # plt.show()
+    plt.show()
 
     return
 
@@ -88,7 +99,7 @@ def full_setup():
 
     # vehicle data
     vehicle  = vehicle_setup()
-    write(vehicle, 'concorde')
+    write(vehicle, 'bwb_6.64_simple')
     configs  = configs_setup(vehicle)
 
     # vehicle analyses
@@ -185,115 +196,58 @@ def vehicle_setup():
     # ------------------------------------------------------------------    
 
     # mass properties
-    vehicle.mass_properties.max_takeoff     = 185000. * Units.kilogram   
+    vehicle.mass_properties.max_takeoff     = 125000. * Units.kilogram   
     vehicle.mass_properties.operating_empty = 78700.  * Units.kilogram   
-    vehicle.mass_properties.takeoff         = 185000. * Units.kilogram   
-    vehicle.mass_properties.cargo           = 1000.   * Units.kilogram   
+    vehicle.mass_properties.takeoff         = 125000. * Units.kilogram   
+    vehicle.mass_properties.cargo           = 12800.   * Units.kilogram   
         
     # envelope properties
     vehicle.envelope.ultimate_load = 3.75
     vehicle.envelope.limit_load    = 2.5
 
     # basic parameters
-    vehicle.reference_area               = 358.25      
-    vehicle.passengers                   = 100
+    vehicle.reference_area               = 300.6  
+    vehicle.passengers                   = 160
     vehicle.systems.control              = "fully powered" 
     vehicle.systems.accessories          = "long range"
     vehicle.maximum_cross_sectional_area = 13.9
-    vehicle.total_length                 = 61.66
+    vehicle.total_length                 = 72.0 * Units.meters
     
     
     # ------------------------------------------------------------------        
     #   Main Wing
-    # ------------------------------------------------------------------        
-    
-    wing = SUAVE.Components.Wings.Main_Wing()
-    wing.tag = 'main_wing'
-    
-    wing.aspect_ratio            = 1.83
-    wing.sweeps.quarter_chord    = 59.5 * Units.deg
-    wing.thickness_to_chord      = 0.03
-    wing.taper                   = 0.
-    wing.spans.projected         = 25.6 * Units.meter
-    wing.chords.root             = 33.8 * Units.meter
-    wing.total_length            = 33.8 * Units.meter
-    wing.chords.tip              = 1.1  * Units.meter
-    wing.chords.mean_aerodynamic = 18.4 * Units.meter
-    wing.areas.reference         = 358.25 * Units['meter**2']  
-    wing.areas.wetted            = 653. - 12.*2.4*2 # 2.4 is engine area on one side
-    wing.areas.exposed           = 326.5  * Units['meter**2']  
-    wing.areas.affected          = .6 * wing.areas.reference
-    wing.twists.root             = 0.0 * Units.degrees
-    wing.twists.tip              = 0.0 * Units.degrees
-    wing.origin                  = [[14,0,-.8]] # meters
-    wing.aerodynamic_center      = [35,0,0] # meters
-    wing.vertical                = False
-    wing.symmetric               = True
-    wing.high_lift               = True
-    wing.vortex_lift             = True
-    wing.high_mach               = True
-    wing.dynamic_pressure_ratio  = 1.0 
-    
-    # add to vehicle
-    vehicle.append_component(wing)
-    
     # ------------------------------------------------------------------
-    #   Vertical Stabilizer
-    # ------------------------------------------------------------------
-    
-    wing = SUAVE.Components.Wings.Vertical_Tail()
-    wing.tag = 'vertical_stabilizer'    
-    
-    wing.aspect_ratio            = 0.74   
-    wing.sweeps.quarter_chord    = 60 * Units.deg
-    wing.thickness_to_chord      = 0.04
-    wing.taper                   = 0.14
-    wing.spans.projected         = 6.0   * Units.meter   
-    wing.chords.root             = 14.5  * Units.meter
-    wing.total_length            = 14.5  * Units.meter
-    wing.chords.tip              = 2.7   * Units.meter
-    wing.chords.mean_aerodynamic = 8.66  * Units.meter
-    wing.areas.reference         = 33.91 * Units['meter**2']  
-    wing.areas.wetted            = 76.   * Units['meter**2']  
-    wing.areas.exposed           = 38.   * Units['meter**2']  
-    wing.areas.affected          = 33.91 * Units['meter**2']  
-    wing.twists.root             = 0.0   * Units.degrees
-    wing.twists.tip              = 0.0   * Units.degrees  
-    wing.origin                  = [[42.,0,1.]] # meters
-    wing.aerodynamic_center      = [50,0,0] # meters
-    wing.vertical                = True 
-    wing.symmetric               = False
-    wing.t_tail                  = False
-    wing.high_mach               = True     
-    wing.dynamic_pressure_ratio  = 1.0
-    
-    # add to vehicle
-    vehicle.append_component(wing)    
+    try:
+        wing = wing_from_para("6.64_simple.csv")
+    except Exception as e:
+        print(f"❌ wing_from_para 未实现或出错：{e}")
+        exit()
+    vehicle.append_component(wing) 
 
     # ------------------------------------------------------------------
     #  Fuselage
     # ------------------------------------------------------------------
     
-    fuselage = SUAVE.Components.Fuselages.Fuselage()
-    fuselage.tag = 'fuselage'
-    fuselage.seats_abreast         = 4
-    fuselage.seat_pitch            = 1     * Units.meter
-    fuselage.fineness.nose         = 4.3   * Units.meter   
-    fuselage.fineness.tail         = 6.4   * Units.meter   
-    fuselage.lengths.total         = 61.66 * Units.meter    
-    fuselage.width                 = 2.88  * Units.meter   
-    fuselage.heights.maximum       = 3.32  * Units.meter   
-    fuselage.heights.maximum       = 3.32  * Units.meter   
-    fuselage.heights.at_quarter_length          = 3.32 * Units.meter   
-    fuselage.heights.at_wing_root_quarter_chord = 3.32 * Units.meter   
-    fuselage.heights.at_three_quarters_length   = 3.32 * Units.meter   
-    fuselage.areas.wetted          = 447. * Units['meter**2'] 
-    fuselage.areas.front_projected = 11.9 * Units['meter**2'] 
-    fuselage.effective_diameter    = 3.1 * Units.meter    
-    fuselage.differential_pressure = 7.4e4 * Units.pascal    # Maximum differential pressure
+    # fuselage = SUAVE.Components.Fuselages.Fuselage()
+    # fuselage.tag = 'fuselage'
+    # fuselage.seats_abreast         = 4
+    # fuselage.seat_pitch            = 1     * Units.meter
+    # fuselage.fineness.nose         = 4.3   * Units.meter   
+    # fuselage.fineness.tail         = 6.4   * Units.meter   
+    # fuselage.lengths.total         = 61.66 * Units.meter    
+    # fuselage.width                 = 2.88  * Units.meter   
+    # fuselage.heights.maximum       = 3.32  * Units.meter   
+    # fuselage.heights.maximum       = 3.32  * Units.meter   
+    # fuselage.heights.at_quarter_length          = 3.32 * Units.meter   
+    # fuselage.heights.at_wing_root_quarter_chord = 3.32 * Units.meter   
+    # fuselage.heights.at_three_quarters_length   = 3.32 * Units.meter   
+    # fuselage.areas.wetted          = 447. * Units['meter**2'] 
+    # fuselage.areas.front_projected = 11.9 * Units['meter**2'] 
+    # fuselage.effective_diameter    = 3.1 * Units.meter    
+    # fuselage.differential_pressure = 7.4e4 * Units.pascal    # Maximum differential pressure
     
-    # add to vehicle
-    vehicle.append_component(fuselage)
+    # # add to vehicle
+    # vehicle.append_component(fuselage)
     
     # ------------------------------------------------------------------        
     # the nacelle 
@@ -575,7 +529,7 @@ def simple_sizing(configs):
         wing.areas.affected = 0.6 * wing.areas.wetted
         
     # fuselage seats
-    base.fuselages['fuselage'].number_coach_seats = base.passengers
+    # base.fuselages['fuselage'].number_coach_seats = base.passengers
 
     # diff the new data
     base.store_diff()
@@ -666,6 +620,20 @@ def mission_setup(analyses):
     
     # add to mission
     mission.append_segment(segment)
+
+    # ------------------------------------------------------------------
+    #   马赫截止飞出陆地区域
+    # ------------------------------------------------------------------  
+
+    segment = Segments.Cruise.Constant_Mach_Constant_Altitude(base_segment)
+    segment.tag = "cruise_0"
+    
+    segment.analyses.extend( analyses.base )
+    
+    segment.mach       = 1.3
+    segment.distance   = 1000.0 * Units.km
+        
+    mission.append_segment(segment)
     
     # ------------------------------------------------------------------
     #   Fourth Climb Segment: linear Mach
@@ -710,7 +678,7 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    segment.mach       = 1.6
+    segment.mach       = 1.8
     segment.distance   = 7844.0 * Units.km
         
     mission.append_segment(segment)
