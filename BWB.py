@@ -11,6 +11,9 @@
 #   Imports
 # ----------------------------------------------------------------------
 
+from itertools import count
+from typing import NewType
+
 import SUAVE
 assert SUAVE.__version__=='2.5.2', 'These tutorials only work with the SUAVE 2.5.2 release'
 from SUAVE.Core import Units, Data
@@ -50,6 +53,9 @@ def main():
     mission = analyses.missions.base
     results = mission.evaluate()
     
+    #-------------------------------------------------------------------------------------------------------
+    # 初始分析
+    #-------------------------------------------------------------------------------------------------------
     last_segment = results.segments.values()[-1]
     final_mass     = last_segment.conditions.weights.total_mass[-1, 0]
     range_list = []
@@ -57,33 +63,54 @@ def main():
         range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
     print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
     print("分段航程：", range_list)
-    other_range = (range_list[2] + range_list[4] - range_list[3] + range_list[-1] - range_list[-4]) / 1000
-    range_13 = range_list[2] / 1000
-    print("爬升下降所用航程：", other_range)
-    target_range = 10388.825148624662
-    land_range = 1315
-    wait_cruise_range = (land_range - range_13)
-    print("马赫截止巡航航程: ", wait_cruise_range / Units.km)
-    true_cruise_range = (target_range - other_range - wait_cruise_range)
-    analyses.missions.base.segments.cruise_0.distance = wait_cruise_range * Units.km
-    analyses.missions.base.segments.cruise.distance = true_cruise_range * Units.km
+    # other_range = (range_list[2] + range_list[4] - range_list[3] + range_list[-1] - range_list[-4]) / 1000
+    # range_13 = range_list[2] / 1000
+    # print("爬升下降所用航程：", other_range)
+    # target_range = 10388.825148624662
+    # land_range = 1315
+    # # land_range = range_13
+    # wait_cruise_range = (land_range - range_13)
+    # print("马赫截止巡航航程: ", wait_cruise_range / Units.km)
+    # true_cruise_range = (target_range - other_range - wait_cruise_range)
+    # analyses.missions.base.segments.cruise_0.distance = wait_cruise_range * Units.km
+    # analyses.missions.base.segments.cruise.distance = true_cruise_range * Units.km
 
-    print("修正航程后重新分析...")
-    # mission analysis
-    mission = analyses.missions.base
-    print("确认新巡航段: ", mission.segments.cruise.distance)
-    print("确认马赫截止巡航段: ", mission.segments.cruise_0.distance)
-    results = mission.evaluate()
+    # print("修正航程后重新分析...")
+    # # mission analysis
+    # mission = analyses.missions.base
+    # print("确认新巡航段: ", mission.segments.cruise.distance)
+    # print("确认马赫截止巡航段: ", mission.segments.cruise_0.distance)
+    # results = mission.evaluate()
     
-    last_segment = results.segments.values()[-1]
-    final_mass     = last_segment.conditions.weights.total_mass[-1, 0]
-    range_list = []
-    for segment in results.segments.values():
-        range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
-    print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
-    print("分段航程：", range_list)
-    other_range = (range_list[4] + range_list[-1] - range_list[-4]) / 1000
-    print("爬升下降所用航程：", other_range)
+    # ## 确定飞行任务后第一轮分析得到燃油消耗
+    # last_segment = results.segments.values()[-1]
+    # final_mass     = last_segment.conditions.weights.total_mass[-1, 0]
+    # range_list = []
+    # for segment in results.segments.values():
+    #     range_list.append(segment.conditions.frames.inertial.aircraft_range[-1, 0])
+    # print("最终质量：", final_mass, "燃油消耗：", max_mass - final_mass)
+    # print("分段航程：", range_list)
+    # other_range = (range_list[4] + range_list[-1] - range_list[-4]) / 1000
+    # print("爬升下降所用航程：", other_range)
+
+    # mass_pass     = configs.base.mass_properties.cargo
+    # empty_ratio   = 0.425
+    # count = 0
+    # maxiter = 10
+    # while True:
+    #     count += 1
+    #     if count > maxiter:
+    #         break
+
+    #     last_segment  = results.segments.values()[-1]
+    #     takeoff_mass  = configs.base.mass_properties.takeoff
+    #     final_mass    = last_segment.conditions.weights.total_mass[-1, 0]
+    #     fuel_mass     = takeoff_mass - final_mass
+    #     new_takeoff   = (1/(1-empty_ratio)) * (fuel_mass + mass_pass)
+    #     configs.base.mass_properties.takeoff = new_takeoff
+    #     print(final_mass, mass_pass, takeoff_mass)
+    #     print(f"第{count}次重量迭代", "空重系数：", (final_mass - mass_pass)/takeoff_mass, "总重：", takeoff_mass)
+    #     results = mission.evaluate()
 
     plot_mission(results)
     
@@ -150,13 +177,17 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = SUAVE.Analyses.Aerodynamics.Supersonic_Zero()
-    aerodynamics.geometry = vehicle    
+    aerodynamics = SUAVE.Analyses.Aerodynamics.SU2_Euler()
+    aerodynamics.geometry = vehicle
+    aerodynamics.process.compute.lift.inviscid.training_file = 'base_data.txt'
+    
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     aerodynamics.settings.span_efficiency            = .8
+
+    aerodynamics.process.compute.lift.inviscid.training.Mach               = np.array([.3, .6, .9, 1.2, 1.5, 1.8]) 
+    aerodynamics.process.compute.lift.inviscid.training.angle_of_attack    = np.array([0., 3., 6., 9., 12., 15.]) * Units.deg
     
     analyses.append(aerodynamics)
-
     # ------------------------------------------------------------------
     #  Stability Analysis
     
@@ -196,9 +227,9 @@ def vehicle_setup():
     # ------------------------------------------------------------------    
 
     # mass properties
-    vehicle.mass_properties.max_takeoff     = 125000. * Units.kilogram   
+    vehicle.mass_properties.max_takeoff     = 120000. * Units.kilogram   
     vehicle.mass_properties.operating_empty = 78700.  * Units.kilogram   
-    vehicle.mass_properties.takeoff         = 125000. * Units.kilogram   
+    vehicle.mass_properties.takeoff         = 120000. * Units.kilogram   
     vehicle.mass_properties.cargo           = 12800.   * Units.kilogram   
         
     # envelope properties
@@ -256,15 +287,15 @@ def vehicle_setup():
     # nacelle                  = SUAVE.Components.Nacelles.Nacelle()
     # nacelle.diameter         = 1.3
     # nacelle.tag              = 'nacelle_L1'
-    # nacelle.origin           = [[36.56, 22, -1.9]] 
-    # nacelle.length           = 12.0 
+    # nacelle.origin           = [[60, 2, 2]] 
+    # nacelle.length           = 8.0 
     # nacelle.inlet_diameter   = 1.1 
     # nacelle.areas.wetted     = 30.
     # vehicle.append_component(nacelle)       
 
     # nacelle_2               = deepcopy(nacelle)
     # nacelle_2.tag           = 'nacelle_2'
-    # nacelle_2.origin        = [[37.,5.3,-1.3]]
+    # nacelle_2.origin        = [[60, -2, 2]]
     # vehicle.append_component(nacelle_2)     
 
     # nacelle_3               = deepcopy(nacelle)
@@ -457,34 +488,34 @@ def configs_setup(vehicle):
     #   Cruise Configuration
     # ------------------------------------------------------------------
     
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'cruise'
+    # config = SUAVE.Components.Configs.Config(base_config)
+    # config.tag = 'cruise'
     
-    configs.append(config)
+    # configs.append(config)
     
     # ------------------------------------------------------------------
     #   Takeoff Configuration
     # ------------------------------------------------------------------
     
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'takeoff'
+    # config = SUAVE.Components.Configs.Config(base_config)
+    # config.tag = 'takeoff'
     
-    config.V2_VS_ratio = 1.21
-    config.maximum_lift_coefficient = 2.
+    # config.V2_VS_ratio = 1.21
+    # config.maximum_lift_coefficient = 2.
     
-    configs.append(config)
+    # configs.append(config)
     
     # ------------------------------------------------------------------
     #   Landing Configuration
     # ------------------------------------------------------------------
 
-    config = SUAVE.Components.Configs.Config(base_config)
-    config.tag = 'landing'
+    # config = SUAVE.Components.Configs.Config(base_config)
+    # config.tag = 'landing'
 
-    config.Vref_VS_ratio = 1.23
-    config.maximum_lift_coefficient = 2.
+    # config.Vref_VS_ratio = 1.23
+    # config.maximum_lift_coefficient = 2.
     
-    configs.append(config)
+    # configs.append(config)
     
     return configs
 
@@ -575,8 +606,8 @@ def mission_setup(analyses):
     
     segment.analyses.extend( analyses.base )
     
-    ones_row = segment.state.ones_row
-    segment.state.unknowns.body_angle = ones_row(1) * 7. * Units.deg   
+    # ones_row = segment.state.ones_row
+    # segment.state.unknowns.body_angle = ones_row(1) * 7. * Units.deg   
     
     segment.altitude_start = 0.0   * Units.km
     segment.altitude_end   = 3.0   * Units.km
@@ -598,7 +629,7 @@ def mission_setup(analyses):
     
     segment.altitude_end   = 11.0   * Units.km
     segment.air_speed      = 174.91  * Units['m/s']
-    segment.climb_rate     = 8.0  * Units['m/s']
+    segment.climb_rate     = 4.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -608,15 +639,16 @@ def mission_setup(analyses):
     #   Third Climb Segment: linear Mach
     # ------------------------------------------------------------------    
     
-    segment = Segments.Climb.Linear_Mach_Constant_Rate(base_segment)
+    segment = Segments.Climb.Constant_Mach_Constant_Rate(base_segment)
     segment.tag = "climb_3"
     
     segment.analyses.extend( analyses.base )
     
     segment.altitude_end = 13.0   * Units.km
-    segment.mach_start   = 0.78
-    segment.mach_end     = 1.3
-    segment.climb_rate   = 4.0  * Units['m/s']
+    # segment.mach_start   = 0.78
+    # segment.mach_end     = 1.3
+    segment.mach_number  = 1.3
+    segment.climb_rate   = 6.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -625,15 +657,15 @@ def mission_setup(analyses):
     #   马赫截止飞出陆地区域
     # ------------------------------------------------------------------  
 
-    segment = Segments.Cruise.Constant_Mach_Constant_Altitude(base_segment)
-    segment.tag = "cruise_0"
+    # segment = Segments.Cruise.Constant_Mach_Constant_Altitude(base_segment)
+    # segment.tag = "cruise_0"
     
-    segment.analyses.extend( analyses.base )
+    # segment.analyses.extend( analyses.base )
     
-    segment.mach       = 1.3
-    segment.distance   = 1000.0 * Units.km
+    # segment.mach       = 1.3
+    # segment.distance   = 1000.0 * Units.km
         
-    mission.append_segment(segment)
+    # mission.append_segment(segment)
     
     # ------------------------------------------------------------------
     #   Fourth Climb Segment: linear Mach
@@ -647,7 +679,7 @@ def mission_setup(analyses):
     segment.altitude_end = 18.0   * Units.km
     segment.mach_start   = 1.3
     segment.mach_end     = 1.8
-    segment.climb_rate   = 4.0  * Units['m/s']
+    segment.climb_rate   = 6.0  * Units['m/s']
     
     # add to mission
     mission.append_segment(segment)
@@ -679,7 +711,7 @@ def mission_setup(analyses):
     segment.analyses.extend( analyses.base )
     
     segment.mach       = 1.8
-    segment.distance   = 7844.0 * Units.km
+    segment.distance   = 3844.0 * Units.km
         
     mission.append_segment(segment)
     

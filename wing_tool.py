@@ -96,11 +96,8 @@ def wing_from_para(para_csv: str = "6.64_simple.csv"):
         segment.append_airfoil(airfoil_data1)  # 添加 airfoil 数据到 segment
         wing.Segments.append(segment)    
 
-    wing.airfoil_type = "file"
-    wing.append_airfoil(airfoil_data1)  
-
     wing.aspect_ratio            = (0.5*span)**2/area
-    wing.aspect_ratio *= 3.5
+    # wing.aspect_ratio *= 4.5
     print(wing.aspect_ratio)
 
     segment = SUAVE.Components.Wings.Segment()

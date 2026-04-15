@@ -23,8 +23,10 @@
 &
 &
 &
+\node [DataIO] (output_aircraft_opt) {$x_0,x_1\dots x_N$};&
 &
-\node [DataIO] (output_SUAVE) {$x_0,x_1\dots x_N$};&
+&
+&
 &
 &
 &
@@ -36,6 +38,8 @@
 &
 &
 \node [DataInter] (design_system-aircraft_opt) {$MTOW$};&
+&
+&
 &
 &
 &
@@ -52,12 +56,16 @@
 &
 &
 &
+&
+&
 \\
 %Row 3
 &
 &
 \node [DataInter] (Range-route_opt) {$f$};&
 \node [Function] (Range) {$Range$};&
+&
+&
 &
 &
 &
@@ -76,16 +84,20 @@
 &
 &
 &
+&
+&
 \\
 %Row 5
-\node [DataIO] (left_output_aircraft_opt) {$MTOW*$};&
+\node [DataIO] (left_output_aircraft_opt) {$MTOW*, x*$};&
 &
 &
 &
 &
 \node [Optimization] (aircraft_opt) {$\text{Aircraft Optimizer}$};&
-\node [DataInter] (aircraft_opt-SUAVE) {$MTOW, \Gamma*$};&
+\node [DataInter] (aircraft_opt-aerodynamic) {$x_0,x_1\dots x_N$};&
 &
+&
+\node [DataInter] (aircraft_opt-SUAVE) {$MTOW, \Gamma*$};&
 &
 &
 \\
@@ -96,9 +108,11 @@
 &
 &
 &
-\node [MDA] (SUAVE) {$\text{SUAVE}$};&
-\node [DataInter] (SUAVE-aerodynamic) {$x_i$};&
-\node [DataInter] (SUAVE-mission) {$MTOW, \Gamma*$};&
+\node [Function] (aerodynamic) {$aerodynamic$};&
+\node [DataInter] (aerodynamic-SU2) {$x_0,x_1\dots x_N$};&
+\node [DataInter] (aerodynamic-CD_vis) {$x_0,x_1\dots x_N$};&
+\node [DataInter] (aerodynamic-SUAVE) {$C_L, C_D$};&
+\node [DataInter] (aerodynamic-mission) {$C_L, C_D$};&
 &
 \\
 %Row 7
@@ -108,9 +122,11 @@
 &
 &
 &
+\node [DataInter] (SU2-aerodynamic) {$C_L, C_{D,inv}$};&
+\node [MDA] (SU2) {$SU2\_Euler$};&
 &
-\node [Function] (aerodynamic) {$aerodynamic$};&
-\node [DataInter] (aerodynamic-mission) {$C_L, C_D$};&
+&
+&
 &
 \\
 %Row 8
@@ -119,13 +135,45 @@
 &
 &
 &
+&
+\node [DataInter] (CD_vis-aerodynamic) {$C_{D,vis}$};&
+&
+\node [Function] (CD_vis) {$C_{D,vis}$};&
+&
+&
+&
+\\
+%Row 9
+&
+&
+&
+&
+&
+&
+&
+&
+&
+\node [MDA] (SUAVE) {$\text{SUAVE}$};&
+\node [DataInter] (SUAVE-mission) {$MTOW, \Gamma*$};&
+&
+\\
+%Row 10
+&
+&
+&
+&
+&
 \node [DataInter] (mission-aircraft_opt) {$W_{fuel}$};&
+&
+&
 &
 &
 \node [Function] (mission) {$mission$};&
 \node [DataInter] (mission-weight) {$D(t)$};&
 \\
-%Row 9
+%Row 11
+&
+&
 &
 &
 &
@@ -137,7 +185,9 @@
 \node [DataInter] (weight-mission) {$W(t)$};&
 \node [Function] (weight) {$weight$};&
 \\
-%Row 10
+%Row 12
+&
+&
 &
 &
 &
@@ -165,7 +215,12 @@
 (land) edge [DataLine] (land-route_opt)
 (route_opt) edge [DataLine] (route_opt-aircraft_opt)
 (aircraft_opt) edge [DataLine] (aircraft_opt-SUAVE)
-(SUAVE) edge [DataLine] (SUAVE-aerodynamic)
+(aircraft_opt) edge [DataLine] (aircraft_opt-aerodynamic)
+(aerodynamic) edge [DataLine] (aerodynamic-SU2)
+(aerodynamic) edge [DataLine] (aerodynamic-CD_vis)
+(SU2) edge [DataLine] (SU2-aerodynamic)
+(CD_vis) edge [DataLine] (CD_vis-aerodynamic)
+(aerodynamic) edge [DataLine] (aerodynamic-SUAVE)
 (SUAVE) edge [DataLine] (SUAVE-mission)
 (aerodynamic) edge [DataLine] (aerodynamic-mission)
 (mission) edge [DataLine] (mission-weight)
@@ -182,14 +237,19 @@
 (land-route_opt) edge [DataLine] (route_opt)
 (route_opt-aircraft_opt) edge [DataLine] (aircraft_opt)
 (aircraft_opt-SUAVE) edge [DataLine] (SUAVE)
-(SUAVE-aerodynamic) edge [DataLine] (aerodynamic)
+(aircraft_opt-aerodynamic) edge [DataLine] (aerodynamic)
+(aerodynamic-SU2) edge [DataLine] (SU2)
+(aerodynamic-CD_vis) edge [DataLine] (CD_vis)
+(SU2-aerodynamic) edge [DataLine] (aerodynamic)
+(CD_vis-aerodynamic) edge [DataLine] (aerodynamic)
+(aerodynamic-SUAVE) edge [DataLine] (SUAVE)
 (SUAVE-mission) edge [DataLine] (mission)
 (aerodynamic-mission) edge [DataLine] (mission)
 (mission-weight) edge [DataLine] (weight)
 (weight-mission) edge [DataLine] (mission)
 (mission-aircraft_opt) edge [DataLine] (aircraft_opt)
 (design_system) edge [DataLine] (output_design_system)
-(SUAVE) edge [DataLine] (output_SUAVE);
+(aircraft_opt) edge [DataLine] (output_aircraft_opt);
 \end{pgfonlayer}
 
 \end{tikzpicture}

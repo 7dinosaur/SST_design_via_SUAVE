@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.6)  8 APR 2026 16:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.6)  14 APR 2026 20:24
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -427,8 +427,7 @@ Package: luatex85 2016/06/15 v1.4 pdftex aliases for luatex
 ) (e:/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-04-14 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count320
-)
-No file mdf.aux.
+) (./mdf.aux)
 \openout1 = `mdf.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
@@ -445,6 +444,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
 LaTeX Font Info:    ... okay on input line 23.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
 LaTeX Font Info:    ... okay on input line 23.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -535,7 +535,7 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 22.
  (e:/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (276.27293pt too wide) in paragraph at lines 195--195
+Overfull \hbox (420.32558pt too wide) in paragraph at lines 255--255
 [][] 
  []
 
@@ -547,15 +547,15 @@ L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 16229 strings out of 467891
- 335658 string characters out of 5438302
- 740491 words of memory out of 5000000
- 44478 multiletter control sequences out of 15000+600000
+ 16316 strings out of 467891
+ 337955 string characters out of 5438302
+ 757148 words of memory out of 5000000
+ 44563 multiletter control sequences out of 15000+600000
  630487 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  102i,17n,107p,465b,1016s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb><e:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on mdf.pdf (1 page, 54604 bytes).
+Output written on mdf.pdf (1 page, 56493 bytes).
 PDF statistics:
  60 PDF objects out of 1000 (max. 8388607)
  30 compressed objects within 1 object stream

@@ -184,6 +184,9 @@ INPUT e:/texlive/2025/texmf-dist/tex/latex/preview/prtightpage.def
 INPUT e:/texlive/2025/texmf-dist/tex/latex/preview/prtightpage.def
 INPUT e:/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT e:/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+INPUT ./mdf.aux
+INPUT ./mdf.aux
+INPUT mdf.aux
 OUTPUT mdf.aux
 INPUT e:/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT e:/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii

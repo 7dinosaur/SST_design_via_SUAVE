@@ -1,6 +1,7 @@
 import folium
 from global_land_mask import globe
 import json
+from matplotlib import markers
 import numpy as np
 from numpy import ndarray
 import math
@@ -140,7 +141,7 @@ class RoutePlanner:
             range_accum += self.latlon_distance(pA[0], pA[1], pB[0], pB[1])
             flight_mission[i+1, 0] = range_accum
 
-        self.flight_mission = flight_mission
+        
         ## 计算水面航程的占比
         total_range = flight_mission[-1, 0]
         seg_dists = np.diff(flight_mission[:, 0])        # 每一段距离
@@ -157,9 +158,18 @@ class RoutePlanner:
             if after_points[t, 1] * after_points[t-1, 1] * after_points[t-2, 1] == 1:
                 no_land_after = False
                 break
+        
+        edges = np.diff(flight_mission[:, 1], prepend=0, append=0)
+        # 起始、结束位置
+        starts = np.where(edges == 1)[0]
+        ends = np.where(edges == -1)[0]
+        for s, e in zip(starts, ends):
+            if (flight_mission[s:e, 0] > check_after_range).all() and (flight_mission[s:e, 0] < check_last_range).all() and e - s <= 2:
+                flight_mission[s:e, 1] = 0
+
+        self.flight_mission = flight_mission
 
         if fig:
-            plt.figure(figsize=(18, 4))
             plt.plot(flight_mission[:, 0]/1000, flight_mission[:, 1])
             plt.xlabel("Range (km)")
             plt.ticklabel_format(style='plain', axis='x')
@@ -229,7 +239,7 @@ def multi_draw(route_list: list[RoutePlanner], output_html: str):
             folium.Marker([points[-1][0], points[-1][1]], tooltip="End").add_to(map)
             route.flight_mission_set()
             flight_mission = route.flight_mission
-            for da in flight_mission:
+            for da in flight_mission[:-1]:
                 if da[1] == 1:
                     lat = da[2]; lon = da[3]
                     if lon < 0:
@@ -240,6 +250,7 @@ def multi_draw(route_list: list[RoutePlanner], output_html: str):
 
 if __name__ == "__main__":
     route = RoutePlanner("beijing-to-las.geojson")
+    plt.figure(figsize=(18, 4))
     n_change = 8
 #     x0 = np.random.uniform(-20, 20, size=n_change)  # 初始猜测
 #     bounds = [(-20, 20)] * n_change  # 每个变量的边界
@@ -266,7 +277,6 @@ if __name__ == "__main__":
     new_route.draw_map("optimized_route.html")
     
     # print(route.route_total_distance())
-    new_route.flight_mission_set(fig=True)
     print("大圆航线航程：", route.route_total_distance(), "优化航线航程：", new_route.route_total_distance())
     multi_draw([route, new_route], "optimized_route.html")
     plt.show()
