@@ -11,9 +11,6 @@
 #   Imports
 # ----------------------------------------------------------------------
 
-from itertools import count
-from typing import NewType
-
 import SUAVE
 assert SUAVE.__version__=='2.5.2', 'These tutorials only work with the SUAVE 2.5.2 release'
 from SUAVE.Core import Units, Data
@@ -178,6 +175,7 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
     aerodynamics = SUAVE.Analyses.Aerodynamics.SU2_Euler()
+
     aerodynamics.geometry = vehicle
     aerodynamics.process.compute.lift.inviscid.training_file = 'base_data.txt'
     
